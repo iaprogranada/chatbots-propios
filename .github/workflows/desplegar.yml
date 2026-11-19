@@ -1,0 +1,63 @@
+# Despliegue en el servidor de Hetzner al fusionar en main (o a mano desde la pestaña Actions).
+# Secretos del repositorio (Settings > Secrets and variables > Actions):
+#   SERVIDOR_HOST       IP del servidor
+#   SERVIDOR_USUARIO    usuario SSH (root o uno con sudo sin contraseña)
+#   SERVIDOR_CLAVE_SSH  clave privada SSH (la misma que usa el auditor)
+#   CLAVE_API_CHATBOT   clave de la API de Claude, solo para el chatbot
+name: Desplegar
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: desplegar
+  cancel-in-progress: false
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  desplegar:
+    needs: pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clave SSH
+        env:
+          CLAVE_SSH: ${{ secrets.SERVIDOR_CLAVE_SSH }}
+          HOST: ${{ secrets.SERVIDOR_HOST }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CLAVE_SSH" > ~/.ssh/id_despliegue && chmod 600 ~/.ssh/id_despliegue
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Copiar el código
+        env:
+          HOST: ${{ secrets.SERVIDOR_HOST }}
+          USUARIO: ${{ secrets.SERVIDOR_USUARIO }}
+        run: |
+          SSH="ssh -i ~/.ssh/id_despliegue"
+          $SSH "$USUARIO@$HOST" 'S=""; [ "$(id -u)" -eq 0 ] || S="sudo -n"; $S mkdir -p /opt/chatbots-propios && $S chown "$(id -un)" /opt/chatbots-propios'
+          rsync -az --delete -e "$SSH" \
+            --exclude .git --exclude node_modules --exclude datos-chatbot --exclude '.env' \
+            ./ "$USUARIO@$HOST:/opt/chatbots-propios/"
+      - name: Instalar y arrancar
+        env:
+          HOST: ${{ secrets.SERVIDOR_HOST }}
+          USUARIO: ${{ secrets.SERVIDOR_USUARIO }}
+          CLAVE_API: ${{ secrets.CLAVE_API_CHATBOT }}
+        run: |
+          printf '%s\n' "$CLAVE_API" | ssh -i ~/.ssh/id_despliegue "$USUARIO@$HOST" 'bash /opt/chatbots-propios/deploy/instalar.sh'
+      - name: Comprobar desde fuera
+        run: |
+          for i in 1 2 3 4 5 6; do curl -fsS https://chat.iapro.top/salud && exit 0; sleep 10; done
+          echo "chat.iapro.top no responde todavía (¿el DNS ya apunta al servidor?)"; exit 1

@@ -41,6 +41,10 @@ export function validarFicha(ficha, idEsperado) {
     else if (!Number.isInteger(valor) || valor < 1) errores.push(`limites.${clave}: entero positivo`);
   }
   if (!Array.isArray(f.urls) || f.urls.some((u) => !/^https:\/\//.test(u))) errores.push('urls: lista de direcciones https');
+  const w = f.widget ?? {};
+  if (w.color !== undefined && !/^#[0-9a-fA-F]{6}$/.test(w.color)) errores.push('widget.color: como "#FF8C00"');
+  for (const k of ['avatarBusto', 'avatarCabeza']) if (w[k] !== undefined && !/^[a-z0-9-]+\.png$/.test(w[k])) errores.push(`widget.${k}: nombre de un .png de publico/`);
+  if (w.botones !== undefined && (!Array.isArray(w.botones) || w.botones.some((b) => typeof b !== 'string' || !b.trim() || b.length > 40))) errores.push('widget.botones: lista de textos cortos');
   if (f.ocultar !== undefined && (!Array.isArray(f.ocultar) || f.ocultar.some((t) => typeof t !== 'string' || t.trim().length < 4))) errores.push('ocultar: lista de textos (4 caracteres o más)');
   if (f.excluir !== undefined && (!Array.isArray(f.excluir) || f.excluir.some((u) => !/^https:\/\//.test(u)))) errores.push('excluir: lista de prefijos de URL https');
   return errores;

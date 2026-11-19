@@ -1,0 +1,22 @@
+# Servicio del chatbot en el servidor. Lo instala deploy/instalar.sh.
+[Unit]
+Description=Chatbots propios de IA Pro (POST /chat y widget)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=chatbot
+Group=chatbot
+WorkingDirectory=/opt/chatbots-propios
+ExecStart=/usr/bin/env node --no-warnings=ExperimentalWarning --env-file=/opt/chatbots-propios/.env src/servidor.mjs
+Restart=on-failure
+RestartSec=5
+# Solo escribe en su carpeta de datos.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/chatbots-propios
+
+[Install]
+WantedBy=multi-user.target

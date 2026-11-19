@@ -26,6 +26,11 @@
   "maxPaginas": 40,
   "widget": {
     "saludo": "¡Hola! Soy el asistente virtual (IA) de IA Pro. Pregúntame lo que quieras sobre nuestros servicios.",
-    "color": "#14A8FF"
+    "color": "#FF8C00",
+    "etiqueta": "RECEPCIÓN · IA PRO",
+    "boton": "¿Hablamos?",
+    "botones": ["Servicios", "Auditoría gratis", "Hablar con el equipo"],
+    "avatarBusto": "avatar-busto.png",
+    "avatarCabeza": "avatar-cabeza.png"
   }
 }
