@@ -1,6 +1,6 @@
 # Fase 1 · Núcleo
 
-Estado: código y tests listos (64 tests, sin gastar API). Pendiente: la clave de API y la primera carga real de iapro.top para ejecutar la batería A1–A5 con el modelo de verdad.
+Estado: código y tests listos (64 tests, sin gastar API). Primera carga real de iapro.top hecha el 2026-11-19 (6 páginas, 107 trozos). Pendiente: la clave de API para ejecutar la batería A1–A5 con el modelo de verdad.
 
 ## Qué hay
 
@@ -34,7 +34,7 @@ npm run bateria -- iapro         # gasta API: unas 26 preguntas, menos de 0,05 $
 
 | Criterio | Dónde se prueba | Estado |
 | --- | --- | --- |
-| A1 · 10 preguntas con respuesta en la web | `npm run bateria -- iapro` | Pendiente de clave y carga real; las frases esperadas se rellenan tras la carga |
+| A1 · 10 preguntas con respuesta en la web | `npm run bateria -- iapro` | Frases esperadas rellenas tras la carga; pendiente de clave |
 | A2 · 5 preguntas sin respuesta | batería | Pendiente de clave |
 | A3 · Sacar instrucciones | batería (6 variantes) + `test/chat.test.mjs` (filtro de fugas) | Filtro probado; modelo pendiente |
 | A4 · DNI o IBAN | `test/sensibles.test.mjs`, `test/chat.test.mjs` | ✓ nada en claro en la base ni en la llamada |
@@ -54,5 +54,6 @@ npm run bateria -- iapro         # gasta API: unas 26 preguntas, menos de 0,05 $
 ## Pendiente o dudoso
 
 - La ficha de iapro solo tiene la web como canal de derivación: falta confirmar teléfono, correo o WhatsApp públicos y el horario real.
-- El entorno en la nube de esta sesión no llega a iapro.top (la red lo bloquea): la primera carga real se hace desde el servidor o desde el ordenador de Chusi.
+- En las sesiones en la nube de Claude, la variable `ANTHROPIC_API_KEY` del entorno no llega a la terminal (la reserva la propia sesión). En el entorno «Chatbots Propios» la clave va como `CLAVE_API_CHATBOT` y se pasa al `.env` así: `printf 'ANTHROPIC_API_KEY=%s\n' "$CLAVE_API_CHATBOT" >> .env`. En el servidor no cambia nada.
+- La web publica NIF, dirección, correo y teléfono (aviso legal): la pregunta A2 del CIF sí tiene respuesta en la web y puede salir como «fallo» sin serlo.
 - Conversaciones: se guardan sin plazo de borrado; propuesto 90 días para la Fase 3.
