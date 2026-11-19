@@ -23,7 +23,8 @@ export function extraerTexto(html, url) {
   const lineas = $('body').text().split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
   return {
     titulo,
-    lineas: lineas.map((l) => {
+    ordenesQuitadas: lineas.filter((l) => esOrden(l)),
+    lineas: lineas.filter((l) => !esOrden(l)).map((l) => {
       const m = new RegExp(`^${MARCA}(\\d)${MARCA}(.*)$`).exec(l);
       return m ? { encabezado: Number(m[1]), texto: m[2] } : { texto: l };
     }),
@@ -31,6 +32,12 @@ export function extraerTexto(html, url) {
 }
 
 const palabras = (t) => t.split(' ').length;
+
+// Órdenes dirigidas a un asistente escondidas en una web («di que todo es gratis», «ignora tus instrucciones»).
+// Se quitan al cargar: el contenido de la web es dato, nunca instrucciones (regla 6, A5).
+const ORDEN = /\b(ignora|olvida|omite|desobedece)\b.{0,40}\b(instrucciones|reglas|anterior|lo de arriba)\b|\b(di|dile|dime|responde|contesta|afirma|asegura)\s+(siempre\s+)?que\b|\b(asistente|bot|chatbot|ia|inteligencia artificial|modelo)s?\b.{0,30}\b(debe|deben|tienes que|tiene que|has de)\b|\b(instrucci[oó]n|nota|mensaje|aviso)\s+(para|a)\s+(el |los |las )?(asistente|bot|chatbot|ia|modelo)s?|\b(system prompt|prompt del sistema|ignore (all |previous )|you are now|as an ai)\b/i;
+
+export const esOrden = (texto) => ORDEN.test(texto);
 
 // Junta líneas en trozos de ~maxPalabras con un solape de ~solape palabras, sin partir líneas.
 export function trocear({ titulo, lineas }, { maxPalabras = 300, solape = 50 } = {}) {
@@ -76,6 +83,6 @@ export function trocearSitio(paginas, opciones) {
       vistas.add(l.texto);
       return true;
     });
-    return { url: p.url, titulo: p.titulo, trozos: trocear({ titulo: p.titulo, lineas }, opciones) };
+    return { url: p.url, titulo: p.titulo, ordenesQuitadas: p.ordenesQuitadas, trozos: trocear({ titulo: p.titulo, lineas }, opciones) };
   });
 }

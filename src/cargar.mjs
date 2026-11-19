@@ -15,6 +15,7 @@ export async function cargarNegocio(ficha, negocioDb, { rastrear = rastrearWeb, 
       const palabras = p.trozos.reduce((n, t) => n + t.texto.split(/\s+/).length, 0);
       // Una página casi vacía en crudo suele ser una web que solo pinta con JavaScript.
       if (palabras < 50) resumen.avisos.push(`${p.url}: solo ${palabras} palabras (¿la web necesita JavaScript?)`);
+      for (const o of p.ordenesQuitadas) resumen.avisos.push(`${p.url}: quitada una posible orden para el bot: «${o.slice(0, 120)}»`);
       if (!p.trozos.length) continue;
       resumen.trozos += negocioDb.guardarFuente({ url: p.url, titulo: p.titulo, trozos: p.trozos });
       resumen.paginas++;
