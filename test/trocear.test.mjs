@@ -53,7 +53,7 @@ test('el pie repetido en todas las páginas se guarda una sola vez', () => {
 });
 
 test('la consulta ignora palabras vacías, tildes y sintaxis FTS', () => {
-  assert.equal(construirConsulta('¿Cuánto cuestan las instalaciones?'), '"cuest"* OR "instalacion"*');
+  assert.equal(construirConsulta('¿Cuánto cuestan las instalaciones?'), '"cuest"* OR "instalacion"* OR "preci"* OR "tarif"*');
   assert.equal(construirConsulta('hola, buenas'), '');
   assert.ok(!construirConsulta('precio" OR negocio_id:* NEAR(').includes('NEAR('));
 });
@@ -81,4 +81,10 @@ test('quita órdenes para el bot escondidas en el texto visible (A5)', () => {
 test('no confunde texto normal con órdenes', () => {
   const html = '<p>Te decimos que sí a casi todo.</p><p>Nuestro chatbot atiende 24 horas.</p><p>Responde al formulario y te llamamos.</p><p>Asistente técnico disponible.</p>';
   assert.equal(extraerTexto(html, 'https://x.example/').ordenesQuitadas.length, 0);
+});
+
+test('sinónimos: «¿dónde estáis?» busca la dirección y «chatbot» busca agentes', () => {
+  assert.match(construirConsulta('¿Dónde estáis?'), /"domicil"\*/);
+  assert.match(construirConsulta('¿Hacéis chatbots?'), /"agent"\*/);
+  assert.equal(construirConsulta('¿Cuál es el CIF?'), '"cif"* OR "nif"*');
 });

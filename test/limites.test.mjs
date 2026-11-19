@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { comprobarLimites } from '../src/limites.mjs';
-import { estaAbierto, describirHorario, diaDe } from '../src/horario.mjs';
+import { estaAbierto, describirHorario, diaDe, proximaApertura } from '../src/horario.mjs';
 import { normalizarFicha } from '../src/negocios.mjs';
 
 const ficha = normalizarFicha({
@@ -46,4 +46,12 @@ test('horario en hora de Madrid, con cambio de hora', () => {
 test('describe el horario y el día natural', () => {
   assert.match(describirHorario(ficha.horario), /^lunes: 09:00 a 14:00; martes: cerrado/);
   assert.equal(diaDe(new Date('2026-11-19T23:30:00Z')), '2026-11-20');
+});
+
+test('la próxima apertura la calcula el código, no el modelo', () => {
+  assert.equal(proximaApertura(ficha.horario, new Date('2026-11-16T07:00:00Z')), 'hoy a las 09:00'); // lunes 08:00
+  assert.equal(proximaApertura(ficha.horario, new Date('2026-11-16T08:30:00Z')), null); // abierto
+  assert.equal(proximaApertura(ficha.horario, new Date('2026-11-16T13:30:00Z')), 'el sábado a las 10:00'); // lunes 14:30
+  assert.equal(proximaApertura(ficha.horario, new Date('2026-11-22T10:00:00Z')), 'mañana (lunes) a las 09:00'); // domingo
+  assert.equal(proximaApertura(null), null);
 });

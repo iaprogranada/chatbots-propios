@@ -41,6 +41,7 @@ export function validarFicha(ficha, idEsperado) {
     else if (!Number.isInteger(valor) || valor < 1) errores.push(`limites.${clave}: entero positivo`);
   }
   if (!Array.isArray(f.urls) || f.urls.some((u) => !/^https:\/\//.test(u))) errores.push('urls: lista de direcciones https');
+  if (f.excluir !== undefined && (!Array.isArray(f.excluir) || f.excluir.some((u) => !/^https:\/\//.test(u)))) errores.push('excluir: lista de prefijos de URL https');
   return errores;
 }
 

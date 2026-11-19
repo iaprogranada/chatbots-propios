@@ -3,7 +3,7 @@
 // cada una en una conversación nueva, y guarda respuestas y comprobaciones para que el agente Chatbots las revise.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { cargarNegocios, textoDerivacion } from './negocios.mjs';
+import { cargarNegocios } from './negocios.mjs';
 import { abrirAlmacen } from './almacen.mjs';
 import { crearAsistente } from './asistente.mjs';
 
@@ -19,7 +19,8 @@ if (!almacen.negocio(id).fuentes().length) { console.error(`${id} no tiene nada 
 // La batería no cuenta para los límites diarios del negocio: usa una ficha con topes altos.
 const ficha = negocios.get(id);
 const asistente = crearAsistente({ almacen, negocios: new Map([[id, { ...ficha, limites: { ...ficha.limites, mensajesPorDia: 1e6 } }]]), registrar: () => {} });
-const derivacion = textoDerivacion(ficha).split(': ')[1]?.split(/, | o /)[0] ?? '';
+// Basta con que aparezca uno de los canales públicos de la ficha (sin el «teléfono »/«correo » del texto).
+const canales = Object.values(ficha.derivacion ?? {}).filter(Boolean);
 
 const resultados = [];
 let coste = 0;
@@ -28,7 +29,7 @@ for (const p of preguntas) {
   const fallos = [];
   for (const f of p.espera ?? []) if (!r.respuesta.toLowerCase().includes(f.toLowerCase())) fallos.push(`falta «${f}»`);
   for (const f of p.noDebe ?? []) if (new RegExp(f, 'i').test(r.respuesta)) fallos.push(`contiene «${f}»`);
-  if (p.derivar && derivacion && !r.respuesta.includes(derivacion)) fallos.push('no deriva a los contactos');
+  if (p.derivar && canales.length && !canales.some((c) => r.respuesta.includes(c))) fallos.push('no deriva a los contactos');
   resultados.push({ ...p, respuesta: r.respuesta, motivo: r.motivo, fuentes: r.fuentes, fallos });
   console.log(`${fallos.length ? '✗' : '✓'} [${p.grupo}] ${p.pregunta}\n    → ${r.respuesta}${r.motivo ? `  (${r.motivo})` : ''}${fallos.length ? `\n    ! ${fallos.join('; ')}` : ''}`);
 }

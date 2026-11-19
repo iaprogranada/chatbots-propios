@@ -34,3 +34,20 @@ export function momento(horario, fecha = new Date()) {
   const { dia, hora } = enZona(fecha, horario?.zona ?? 'Europe/Madrid');
   return `${NOMBRES[dia]}, ${hora}`;
 }
+
+// Cuándo vuelve a abrir, calculado en el código (el modelo se equivoca contando días): «hoy a las 16:00»,
+// «mañana (viernes) a las 09:00», «el lunes a las 09:00». null si está abierto o no hay horario.
+export function proximaApertura(horario, fecha = new Date()) {
+  if (!horario?.dias || estaAbierto(horario, fecha)) return null;
+  const zona = horario.zona ?? 'Europe/Madrid';
+  const { hora } = enZona(fecha, zona);
+  for (let i = 0; i < 8; i++) {
+    const { dia } = enZona(new Date(fecha.getTime() + i * 86400000), zona);
+    const tramo = (horario.dias[dia] ?? []).map(([desde]) => desde).sort().find((desde) => i > 0 || desde > hora);
+    if (!tramo) continue;
+    if (i === 0) return `hoy a las ${tramo}`;
+    if (i === 1) return `mañana (${NOMBRES[dia]}) a las ${tramo}`;
+    return `el ${NOMBRES[dia]} a las ${tramo}`;
+  }
+  return null;
+}

@@ -2,7 +2,7 @@
   "id": "iapro",
   "nombre": "IA Pro",
   "tono": "cercano",
-  "instrucciones": "IA Pro es una agencia de Granada de marketing digital, contenidos e inteligencia artificial para negocios. Ayuda a la persona a entender los servicios y a dar el siguiente paso de contacto.",
+  "instrucciones": "IA Pro es una agencia de Granada de marketing digital, contenidos e inteligencia artificial para negocios. Servicios que aparecen en su web: auditoría de visibilidad en IA (gratis) y Diagnóstico 360; agentes de IA conversacionales (chatbots) de atención al cliente; reseñas de Google con plaquitas, tarjetas y stands NFC y respuesta automática a reseñas con IA (Reputación Pro); webs y landings; gestión de redes sociales y creación de contenidos; vídeos con IA para inmobiliarias (reformas virtuales, home staging, recorridos 360); edición de vídeo y motion graphics. Ayuda a la persona a entender los servicios y a dar el siguiente paso de contacto.",
   "derivacion": {
     "web": "https://iapro.top"
   },
@@ -19,6 +19,7 @@
   "dominios": ["https://iapro.top", "https://www.iapro.top", "http://localhost:8090", "http://127.0.0.1:8090"],
   "limites": { "mensajesPorConversacion": 20, "mensajesPorDia": 300, "caracteresPorMensaje": 1000 },
   "urls": ["https://iapro.top/"],
+  "excluir": ["https://iapro.top/v/", "https://iapro.top/en.html"],
   "maxPaginas": 40,
   "widget": {
     "saludo": "¡Hola! Soy el asistente virtual (IA) de IA Pro. Pregúntame lo que quieras sobre nuestros servicios.",

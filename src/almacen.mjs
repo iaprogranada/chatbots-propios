@@ -91,6 +91,16 @@ export function abrirAlmacen(ruta = ':memory:') {
         });
       },
       fuentes: () => sql.fuentes.all(n),
+      // Quita una URL que ya no se carga (excluida en la ficha o desaparecida de la web).
+      borrarFuente(url) {
+        return enTransaccion(() => {
+          const previa = sql.fuente.get(n, url);
+          if (!previa) return false;
+          sql.borrarFts.run(n, previa.id);
+          sql.borrarFuente.run(n, previa.id);
+          return true;
+        });
+      },
       // expresion = consulta FTS5 ya construida (ver busqueda.mjs).
       buscar: (expresion, limite = 6) => (expresion ? sql.buscar.all(expresion, n, limite) : []),
       nuevaConversacion(origen = null) {

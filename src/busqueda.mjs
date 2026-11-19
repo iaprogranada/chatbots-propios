@@ -5,14 +5,30 @@ const VACIAS = new Set(`a al algo algun alguna alguno algunos ante antes aqui as
 
 const normalizar = (t) => String(t ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
+// Sinónimos generales de atención al público: la gente pregunta con unas palabras y la web usa otras
+// («¿dónde estáis?» → domicilio, «chatbot» → agente). Solo palabras de uso común, nada de un negocio concreto.
+const SINONIMOS = {
+  donde: ['direccion', 'domicilio', 'calle', 'ubicacion'],
+  ubicacion: ['direccion', 'domicilio', 'calle'], ubicados: ['direccion', 'domicilio', 'calle'], direccion: ['domicilio', 'calle'],
+  chatbot: ['agente', 'asistente'], chatbots: ['agentes', 'asistente'], bot: ['agente', 'asistente'], bots: ['agentes', 'asistente'],
+  cif: ['nif'], nif: ['cif'],
+  contactar: ['contacto', 'correo', 'telefono'], contacto: ['correo', 'telefono'], llamar: ['telefono'], email: ['correo'],
+  precio: ['precios', 'tarifa', 'cuesta'], precios: ['tarifa', 'cuesta'], cuesta: ['precio', 'tarifa'], cuestan: ['precio', 'tarifa'],
+  horario: ['horas', 'abierto'], abris: ['horario'], abierto: ['horario'],
+};
+
 // «¿Cuánto cuestan las instalaciones?» → "cuestan"* OR "instalacion"*  (raíces cortas con prefijo)
 export function construirConsulta(texto) {
   const terminos = new Set();
+  const extra = [];
+  const anadir = (p) => terminos.add(`"${p.length > 5 ? p.slice(0, Math.max(5, p.length - 2)) : p}"*`);
   for (const p of normalizar(texto).split(/[^a-z0-9ñ]+/)) {
+    if (SINONIMOS[p]) extra.push(...SINONIMOS[p]);
     if (!p || VACIAS.has(p) || (p.length < 3 && !/^\d+$/.test(p))) continue;
-    const raiz = p.length > 5 ? p.slice(0, Math.max(5, p.length - 2)) : p;
-    terminos.add(`"${raiz}"*`);
+    anadir(p);
   }
+  // Primero las palabras del usuario; los sinónimos completan hasta el tope.
+  for (const p of extra) anadir(p);
   return [...terminos].slice(0, 12).join(' OR ');
 }
 
