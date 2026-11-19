@@ -1,6 +1,6 @@
 # Fase 2 · Widget y despliegue
 
-Estado: código listo y probado en local (72 tests; widget probado en navegador de escritorio y móvil con un modelo simulado). Falta el despliegue real: DNS, secretos de GitHub y fusionar en `main`.
+Estado: código listo y probado en local (72 tests; widget probado en navegador de escritorio y móvil con un modelo simulado). Despliegue automático desde `main` (ver abajo).
 
 ## Qué hay
 
@@ -12,23 +12,21 @@ Estado: código listo y probado en local (72 tests; widget probado en navegador 
 | Página de prueba | `GET /prueba/<id>` | Página `noindex` para probar el bot antes de ponerlo en la web. |
 | Servicio | `deploy/chatbot.service` | systemd, usuario propio `chatbot`, solo escribe en `/var/lib/chatbots-propios`. |
 | HTTPS | `deploy/chatbot.caddy` | `chat.iapro.top` → `127.0.0.1:8090`. Archivo aparte + una línea `import` en el Caddyfile: no toca lo del auditor. |
-| Despliegue | `.github/workflows/desplegar.yml`, `deploy/instalar.sh` | Al fusionar en `main`: tests, copia por SSH, `npm ci`, `.env` desde los secretos, systemd, Caddy, carga de la web de cada negocio y comprobación de `/salud`. |
+| Despliegue | `deploy/actualizar.sh`, `deploy/instalar.sh` | El servidor baja `main` cada 2 minutos; si hay commit nuevo: `npm ci`, `.env`, systemd, Caddy, carga de la web de cada negocio y comprobación de `/salud`. Los tests corren en GitHub Actions (`pruebas.yml`). |
 
-## Pasos de Chusi (una sola vez)
+## Cómo se despliega
 
-1. **DNS en Hostinger**: Dominios → iapro.top → DNS / Nameservers → Añadir registro. Tipo `A`, nombre `chat`, apunta a `2.31.81.50`, TTL por defecto.
-2. **Secretos en GitHub**: en el repositorio `chatbots-propios` → Settings → Secrets and variables → Actions → New repository secret. Cuatro secretos:
-   - `SERVIDOR_HOST`: `2.31.81.50`
-   - `SERVIDOR_USUARIO`: el mismo usuario que usa el auditor para desplegar
-   - `SERVIDOR_CLAVE_SSH`: la misma clave privada que tiene el auditor (si no la tienes a mano, se genera una nueva y se añade al servidor)
-   - `CLAVE_API_CHATBOT`: la clave de la API del chatbot (la misma que pusiste en el entorno de Claude)
-3. **Fusionar el PR**. El despliegue arranca solo; se ve en la pestaña Actions.
-4. **Probar** en `https://chat.iapro.top/prueba/iapro`.
-5. **Ponerlo en la web**: en Hostinger, en el código personalizado de la web (antes de `</body>`, en todas las páginas), pegar:
+El servidor se actualiza solo: un temporizador (`chatbot-actualizar`, cada 2 minutos) baja `main` de este repositorio con una clave de solo lectura (deploy key «servidor-hetzner») y, si hay un commit nuevo, ejecuta `deploy/actualizar.sh` → `deploy/instalar.sh`. No hay claves del servidor guardadas en GitHub.
 
-   ```html
-   <script src="https://chat.iapro.top/widget.js" data-negocio="iapro" defer></script>
-   ```
+- Preparación única: flujo `preparar-chatbot` en la rama del mismo nombre del repositorio `auditor-aeo` (usa la clave de despliegue que ya tenía el auditor). Crea la deploy key en el servidor e instala el temporizador.
+- La clave de la API vive solo en el servidor: `/etc/chatbots-propios/clave-api` (root, 600).
+- DNS: registro `A` `chat` → `2.31.81.50` en Hostinger (hecho el 2026-11-19).
+- El despliegue del auditor reescribe el Caddyfile entero; un añadido de systemd en Caddy (`caddy.service.d/chatbot.conf`) y el propio temporizador vuelven a poner la línea `import /etc/caddy/chatbot.caddy`.
+- Para ponerlo en la web: en Hostinger, código personalizado antes de `</body>`:
+
+  ```html
+  <script src="https://chat.iapro.top/widget.js" data-negocio="iapro" defer></script>
+  ```
 
 ## Gasto
 

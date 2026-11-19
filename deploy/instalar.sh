@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Se ejecuta EN EL SERVIDOR desde GitHub Actions, después de copiar el código a /opt/chatbots-propios.
+# Se ejecuta EN EL SERVIDOR (lo llama deploy/actualizar.sh), después de copiar el código a /opt/chatbots-propios.
 # Lee la clave de la API por la entrada estándar (nunca como argumento, para que no salga en la lista de procesos).
 # Es idempotente: se puede repetir en cada despliegue.
 set -euo pipefail
@@ -52,6 +52,17 @@ $SUDO systemctl enable chatbot >/dev/null
 $SUDO systemctl restart chatbot
 
 # 7. Caddy: un archivo propio y una línea import en el Caddyfile (sin tocar lo del auditor).
+# El despliegue del auditor reescribe el Caddyfile entero: este añadido de systemd vuelve a poner la línea
+# cada vez que Caddy arranca o recarga, así el chat no se cae cuando se despliega el auditor.
+$SUDO mkdir -p /etc/systemd/system/caddy.service.d
+$SUDO tee /etc/systemd/system/caddy.service.d/chatbot.conf >/dev/null <<'UNIT'
+[Service]
+ExecStartPre=/bin/sh -c 'grep -qxF "import /etc/caddy/chatbot.caddy" /etc/caddy/Caddyfile || echo "import /etc/caddy/chatbot.caddy" >> /etc/caddy/Caddyfile'
+ExecReload=
+ExecReload=/bin/sh -c 'grep -qxF "import /etc/caddy/chatbot.caddy" /etc/caddy/Caddyfile || echo "import /etc/caddy/chatbot.caddy" >> /etc/caddy/Caddyfile'
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile --force
+UNIT
+$SUDO systemctl daemon-reload
 $SUDO cp deploy/chatbot.caddy /etc/caddy/chatbot.caddy
 grep -qxF 'import /etc/caddy/chatbot.caddy' /etc/caddy/Caddyfile \
   || echo 'import /etc/caddy/chatbot.caddy' | $SUDO tee -a /etc/caddy/Caddyfile >/dev/null
