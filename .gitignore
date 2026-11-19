@@ -1,0 +1,5 @@
+node_modules/
+datos-chatbot/
+.env
+.env.*
+!servicio.env.ejemplo
