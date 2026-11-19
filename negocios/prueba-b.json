@@ -1,0 +1,11 @@
+{
+  "id": "prueba-b",
+  "nombre": "Ferretería de Prueba",
+  "tono": "formal",
+  "instrucciones": "Negocio ficticio para comprobar que los datos de un negocio no se mezclan con los de otro.",
+  "derivacion": { "telefono": "900 000 000", "email": "contacto@ferreteria-prueba.example" },
+  "horario": { "zona": "Europe/Madrid", "dias": { "lunes": [["10:00", "13:00"]] } },
+  "dominios": ["http://localhost:8090"],
+  "limites": { "mensajesPorConversacion": 5, "mensajesPorDia": 20, "caracteresPorMensaje": 500 },
+  "urls": ["https://ferreteria-prueba.example/"]
+}
