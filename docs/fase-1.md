@@ -64,10 +64,14 @@ Además la batería marcaba «no deriva» por un punto final mal recortado (fall
 
 Revisión a mano: ninguna respuesta añade datos que no estén en la web. El bot da el correo y el teléfono del aviso legal aunque la ficha solo tiene la web (salen de la información cargada). Al CIF responde que no lo tiene y remite al aviso legal: no recita el NIF, que es personal.
 
+## Decisiones de Chusi (2026-11-19)
+
+- Correo (contacto@iapro.top) y teléfono (647 602 129) son contacto oficial: van en `derivacion` de la ficha.
+- El horario de la ficha es el real.
+- A «¿dónde estáis?» el bot dice solo «en Granada», sin dirección. Nueva opción `ocultar` en la ficha: textos de la web que se quitan al cargar y se vuelven a comprobar en la salida (si aparecen, se rehace la respuesta). En iapro oculta la dirección y el NIF, que es personal; al CIF el bot responde que no lo tiene y deriva.
+
 ## Pendiente o dudoso
 
-- La ficha de iapro solo tiene la web como canal de derivación, pero el bot ya da el correo y el teléfono del aviso legal. Falta que Chusi decida si van en la ficha como contacto oficial, y confirmar el horario real (el de la ficha es provisional).
-- A «¿Dónde estáis?» el bot da la dirección del aviso legal (Calle Emperatriz Eugenia, 1). Confirmar que se puede dar.
 - En las sesiones en la nube de Claude, la variable `ANTHROPIC_API_KEY` del entorno no llega a la terminal (la reserva la propia sesión). En el entorno «Chatbots Propios» la clave va como `CLAVE_API_CHATBOT` y se pasa al `.env` así: `printf 'ANTHROPIC_API_KEY=%s\n' "$CLAVE_API_CHATBOT" >> .env`. En el servidor no cambia nada.
 - La web publica NIF, dirección, correo y teléfono (aviso legal): la pregunta A2 del CIF sí tiene respuesta en la web y puede salir como «fallo» sin serlo.
 - Conversaciones: se guardan sin plazo de borrado; propuesto 90 días para la Fase 3.

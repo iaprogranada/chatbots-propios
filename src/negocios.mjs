@@ -41,6 +41,7 @@ export function validarFicha(ficha, idEsperado) {
     else if (!Number.isInteger(valor) || valor < 1) errores.push(`limites.${clave}: entero positivo`);
   }
   if (!Array.isArray(f.urls) || f.urls.some((u) => !/^https:\/\//.test(u))) errores.push('urls: lista de direcciones https');
+  if (f.ocultar !== undefined && (!Array.isArray(f.ocultar) || f.ocultar.some((t) => typeof t !== 'string' || t.trim().length < 4))) errores.push('ocultar: lista de textos (4 caracteres o más)');
   if (f.excluir !== undefined && (!Array.isArray(f.excluir) || f.excluir.some((u) => !/^https:\/\//.test(u)))) errores.push('excluir: lista de prefijos de URL https');
   return errores;
 }
@@ -84,3 +85,13 @@ export function textoDerivacion(ficha) {
     ? `Puede contactar con una persona del equipo de ${ficha.nombre} en: ${lista}.`
     : `Puedes hablar con una persona del equipo de ${ficha.nombre} en: ${lista}.`;
 }
+
+// «ocultar» de la ficha: textos publicados en la web que el dueño no quiere que el bot repita (p. ej. la dirección).
+// Se quitan al cargar y se vuelven a comprobar en la salida. Sin distinguir mayúsculas.
+const escapar = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export function quitarOcultos(texto, ocultar = []) {
+  let r = texto;
+  for (const t of ocultar) r = r.replace(new RegExp(`${escapar(t)}[,.]?\\s*`, 'gi'), '');
+  return r;
+}
+export const contieneOculto = (texto, ocultar = []) => ocultar.some((t) => texto.toLowerCase().includes(t.toLowerCase()));

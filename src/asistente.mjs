@@ -1,7 +1,7 @@
 // El bot: une límites, datos sensibles, búsqueda, modelo y comprobaciones de salida.
 // Orden de una respuesta: ficha → conversación → enmascarar → límites (sin gasto) → búsqueda → Claude → comprobar → guardar.
 // Llamada HTTP directa a la API (como redactor.mjs del auditor): una sola dependencia en el proyecto.
-import { textoDerivacion } from './negocios.mjs';
+import { textoDerivacion, contieneOculto } from './negocios.mjs';
 import { enmascarar, avisoSensibles } from './sensibles.mjs';
 import { comprobarLimites } from './limites.mjs';
 import { estaAbierto, describirHorario, momento, diaDe, proximaApertura } from './horario.mjs';
@@ -159,6 +159,7 @@ export function crearAsistente({ almacen, negocios, env = process.env, pedir = f
         if (r.parada === 'refusal' || !r.texto) { motivo = 'rechazo'; break; }
         const malas = cifrasSinRespaldo(r.texto, respaldo);
         const fuga = filtraPrompt(r.texto);
+        if (contieneOculto(r.texto, ficha.ocultar)) malas.push('dato oculto por el negocio');
         if (!malas.length && !fuga) { respuesta = r.texto; motivo = intento > 1 ? 'rehecha' : null; break; }
         motivo = fuga ? 'fuga-prompt' : `cifras-sin-respaldo:${malas.join('|')}`;
         registrar(`${negocioId}: respuesta descartada (${motivo})`);

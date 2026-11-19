@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // npm run cargar -- <negocio_id>  → rastrea las urls de su ficha, trocea y guarda en la base (sustituye lo anterior).
 import { join } from 'node:path';
-import { cargarNegocios } from './negocios.mjs';
+import { cargarNegocios, quitarOcultos } from './negocios.mjs';
 import { abrirAlmacen } from './almacen.mjs';
 import { rastrear as rastrearWeb } from './carga/rastrear.mjs';
 import { trocearSitio } from './carga/trocear.mjs';
@@ -24,7 +24,8 @@ export async function cargarNegocio(ficha, negocioDb, { rastrear = rastrearWeb, 
       if (palabras < 50) resumen.avisos.push(`${p.url}: solo ${palabras} palabras (¿la web necesita JavaScript?)`);
       for (const o of p.ordenesQuitadas) resumen.avisos.push(`${p.url}: quitada una posible orden para el bot: «${o.slice(0, 120)}»`);
       if (!p.trozos.length) continue;
-      resumen.trozos += negocioDb.guardarFuente({ url: p.url, titulo: p.titulo, trozos: p.trozos });
+      const trozos = p.trozos.map((t) => ({ ...t, texto: quitarOcultos(t.texto, ficha.ocultar) }));
+      resumen.trozos += negocioDb.guardarFuente({ url: p.url, titulo: p.titulo, trozos });
       cargadas.add(p.url);
       resumen.paginas++;
     }
