@@ -1,0 +1,5 @@
+# chat.iapro.top → servicio del chatbot. Caddy saca y renueva el certificado HTTPS solo.
+chat.iapro.top {
+	encode gzip
+	reverse_proxy 127.0.0.1:8090
+}

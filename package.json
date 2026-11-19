@@ -1,0 +1,19 @@
+{
+  "name": "chatbots-propios",
+  "version": "0.1.0",
+  "description": "Asistentes de atención al público de IA Pro, sin plataformas externas",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "test": "node --no-warnings=ExperimentalWarning --test test/*.test.mjs",
+    "servicio": "node --no-warnings=ExperimentalWarning --env-file=.env src/servidor.mjs",
+    "cargar": "node --no-warnings=ExperimentalWarning --env-file-if-exists=.env src/cargar.mjs",
+    "bateria": "node --no-warnings=ExperimentalWarning --env-file=.env src/bateria.mjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0"
+  }
+}
